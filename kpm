@@ -1,0 +1,49 @@
+#!/bin/bash -eu
+
+help() {
+    echo 'Usage: kpm COMMAND [arg...]
+
+(Another) Kubernetes Package Manager \o/.
+
+Commands:
+  l|list            List available packages
+  i|install         Install a package
+  g|get             Show package details
+'
+}
+
+here=$(dirname "$(readlink -f "$0")")
+
+list() { ls $here/pkg -1 | sed -r "s|(.*)_(.*).sh|\2 \1|" | column -t ;}
+
+is() { 
+    local package=${1:-}
+    ( ls $here/pkg | grep "_${package}.sh" ) \
+    || \
+    ( ls $here/pkg | grep "${package}_" )
+}
+
+run() {
+    local cmd=${1:-}     && shift
+    local package=${1:-} && shift || (echo "kpm $cmd requires 1 argument"  && exit 1)
+
+    p=$(is $package)
+    if [[ "$p" == "" ]]; then
+        echo "package not found" && exit 1
+    fi
+
+    source $here/pkg/$p
+    $cmd $@
+}
+
+main() {
+    local arg=${1:-} && shift || true
+    case $arg in
+        l|list)    list ;;
+        i|install) run install $@ ;;
+        g|get)     run get $@ ;;
+        *)         help ;;
+    esac
+}
+
+main "$@"
