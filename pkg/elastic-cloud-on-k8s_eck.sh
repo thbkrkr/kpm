@@ -1,4 +1,4 @@
-version=0.8.0
+version=1.0.1
 
 install() {
 	curl https://download.elastic.co/downloads/eck/$version/all-in-one.yaml -s | \
